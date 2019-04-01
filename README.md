@@ -37,3 +37,9 @@ with BinFile(filename, "r") as f:
     # readChannelData() supports reading in random location (Ex: Read 10 secs of data at 1 min mark)
     data = f.readChannelData(offset=60, length=10, useSecForOffset=True, useSecForLength=True)
 ```
+
+## File open mode
+Currently, there are three modes to open a file:
+- "w": For writing to a new file.  You need to make sure the file doesn't exist.
+- "r": For reading from an existing file.  You need to make sure the file exists.
+- "r+": For appending data to an existing file.  You need to make sure the file exists.
