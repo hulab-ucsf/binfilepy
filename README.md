@@ -43,3 +43,18 @@ Currently, there are three modes to open a file:
 - "w": For writing to a new file.  You need to make sure the file doesn't exist.
 - "r": For reading from an existing file.  You need to make sure the file exists.
 - "r+": For appending data to an existing file.  You need to make sure the file exists.
+
+You can use either syntax:
+```
+with BinFile(filename, "w") as f:
+    ...
+    ...
+```
+or
+```
+f = BinFile(filename, "w")
+f.open()
+...
+...
+f.close()
+```

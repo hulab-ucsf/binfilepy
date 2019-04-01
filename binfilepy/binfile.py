@@ -312,8 +312,8 @@ class BinFile:
                 self.f.write(struct.pack("i", numSamples))
                 self.f.flush()
 
-    def closeFile(self):
-        # print("CloseFile")
+    def close(self):
+        # print("Close")
         if self.f is not None:
             self.f.flush()
             self.f.close()
@@ -323,4 +323,4 @@ class BinFile:
         return self
 
     def __exit__(self, type, value, traceback):
-        self.closeFile()
+        self.close()
