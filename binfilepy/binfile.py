@@ -171,9 +171,9 @@ class BinFile:
         self.channels = []
         for i in range(self.header.NChannels):
             buf = self.f.read(32)
-            label = buf.decode("ASCII").rstrip('\0')
+            label = buf.decode("utf-8").rstrip('\0')
             buf = self.f.read(32)
-            uom = buf.decode("ASCII").rstrip('\0')
+            uom = buf.decode("utf-8").rstrip('\0')
             scale, offset, rangeHigh, rangeLow = struct.unpack("dddd", self.f.read(constant.DOUBLE_SIZE * 4))
             channel = CFWBCHANNEL(label, uom, scale, offset, rangeHigh, rangeLow)
             self.channels.append(channel)
@@ -203,7 +203,7 @@ class BinFile:
                 if length > 32:
                     length = 32
                 for j in range(length):
-                    self.f.write(struct.pack("c", channel.Title[j].encode('ASCII')))
+                    self.f.write(struct.pack("c", channel.Title[j].encode('utf-8')))
                 length = 32 - len(channel.Title)
                 if length < 0:
                     length = 0
@@ -213,7 +213,7 @@ class BinFile:
                 if length > 32:
                     length = 32
                 for j in range(len(channel.Units)):
-                    self.f.write(struct.pack("c", channel.Units[j].encode('ASCII')))
+                    self.f.write(struct.pack("c", channel.Units[j].encode('utf-8')))
                 length = 32 - len(channel.Units)
                 if length < 0:
                     length = 0
