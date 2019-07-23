@@ -178,18 +178,6 @@ class BinFile:
             channel = CFWBCHANNEL(label, uom, scale, offset, rangeHigh, rangeLow)
             self.channels.append(channel)
 
-    def fwrite(self, ch):
-        byteWritten = 0
-        a = None
-        try:
-            a = struct.pack("c", ch.encode('utf-8'))
-            byteWritten = 1
-        except:
-            a = struct.pack("2s", ch.encode('utf-8'))
-            byteWritten = 2
-        self.f.write(a)
-        return byteWritten
-
     def writeHeader(self):
         # set to beginning of file
         self.f.seek(0, 0)
@@ -211,33 +199,8 @@ class BinFile:
         if (self.channels is not None) and (len(self.channels) > 0):
             for i in range(len(self.channels)):
                 channel = self.channels[i]
-                length = len(channel.Title)
-                if length > 32:
-                    length = 32
-                byteWritten = 0
-                for j in range(length):
-                    byteWritten += self.fwrite(channel.Title[j])
-                    if byteWritten >= 32:
-                        break
-                    # self.f.write(struct.pack("c", channel.Title[j].encode('utf-8')))
-                length = 32 - byteWritten # len(channel.Title)
-                if length < 0:
-                    length = 0
-                for j in range(length):
-                    self.f.write(struct.pack("c", b'\0'))
-                length = len(channel.Units)
-                if length > 32:
-                    length = 32
-                for j in range(len(channel.Units)):
-                    byteWritten += self.fwrite(channel.Units[j])
-                    if byteWritten >= 32:
-                        break
-                    # self.f.write(struct.pack("c", channel.Units[j].encode('utf-8')))
-                length = 32 - byteWritten # len(channel.Units)
-                if length < 0:
-                    length = 0
-                for j in range(length):
-                    self.f.write(struct.pack("c", b'\0'))
+                self.f.write(struct.pack("32s", channel.Title.encode('utf-8')))
+                self.f.write(struct.pack("32s", channel.Units.encode('utf-8')))
                 self.f.write(struct.pack("d", channel.scale))
                 self.f.write(struct.pack("d", channel.offset))
                 self.f.write(struct.pack("d", channel.RangeHigh))
