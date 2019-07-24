@@ -265,8 +265,11 @@ class BinFile:
                         d = constant.MIN_FLOAT_VALUE
                         self.f.write(struct.pack("f", d))
         overlappedSamples = (-1 * gapInSecs * fs) if gapInSecs < 0 else 0
-        numSamplesWritten += max(len(chanData[0]) - overlappedSamples, 0)
-        for j in range(len(chanData[0])):
+        len_chanData = 0
+        if len(chanData) > 0:
+            len_chanData = len(chanData[0])
+        numSamplesWritten += max(len_chanData - overlappedSamples, 0)
+        for j in range(len_chanData):
             if j < overlappedSamples:
                 continue
             for i in range(len(chanData)):
