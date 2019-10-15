@@ -242,7 +242,7 @@ class BinFile:
                         c[x] = constant.MIN_DOUBLE_VALUE
                     else:
                         c[x] = self.channels[i].scale * (v + self.channels[i].offset)
-            i += 1
+                i += 1
         return channelArr
 
     def writeChannelData(self, chanData: List[List[Any]], fs: int = 0, gapInSecs: int = 0):
