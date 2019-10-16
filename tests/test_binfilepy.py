@@ -60,6 +60,7 @@ def test_binfilewriter():
         f.updateSamplesPerChannel(8000, True)
     with BinFile(filename, "r") as g:
         g.readHeader()
+        arr = g.readChannelData(0, 8000, False, False, 2.0)
         assert(len(g.channels) == 2)
         assert(g.header.SamplesPerChannel == 8000)
     # remove temporary file created

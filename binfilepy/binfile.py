@@ -32,6 +32,7 @@ import struct
 from typing import List
 from typing import Any
 from . import constant
+from .fixsampling import fixsamplingarr
 
 
 class CFWBINARY:
@@ -206,7 +207,7 @@ class BinFile:
                 self.f.write(struct.pack("d", channel.RangeHigh))
                 self.f.write(struct.pack("d", channel.RangeLow))
 
-    def readChannelData(self, offset: float, length: float, useSecForOffset: bool, useSecForLength: bool):
+    def readChannelData(self, offset: float, length: float, useSecForOffset: bool, useSecForLength: bool, downSamplingRatio: float = 1.0):
         offsetSampleNum = int(offset / self.header.secsPerTick) if useSecForOffset else int(offset)
         lengthSampleNum = int(length / self.header.secsPerTick) if useSecForLength else int(length)
         if (self.header.DataFormat == constant.FORMAT_DOUBLE):
@@ -243,6 +244,9 @@ class BinFile:
                     else:
                         c[x] = self.channels[i].scale * (v + self.channels[i].offset)
             i += 1
+
+        if downSamplingRatio != 1.0:
+            channelArr = fixsamplingarr(channelArr, downSamplingRatio)
         return channelArr
 
     def writeChannelData(self, chanData: List[List[Any]], fs: int = 0, gapInSecs: int = 0):
