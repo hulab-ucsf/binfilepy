@@ -5,8 +5,8 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="binfilepy",
-    version="0.1.7",
-    author="Peter Li@HuLab UCSF",
+    version="0.1.8",
+    author="Peter Li (peter36)",
     author_email="peter0306@gmail.com",
     description="Package for read/write binary file (.adibin format)",
     long_description=long_description,

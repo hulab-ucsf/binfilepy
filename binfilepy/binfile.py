@@ -207,7 +207,8 @@ class BinFile:
                 self.f.write(struct.pack("d", channel.RangeHigh))
                 self.f.write(struct.pack("d", channel.RangeLow))
 
-    def readChannelData(self, offset: float, length: float, useSecForOffset: bool, useSecForLength: bool, downSamplingRatio: float = 1.0):
+
+    def readChannelData(self, offset: float, length: float, useSecForOffset: bool, useSecForLength: bool, downSamplingRatio: float = 1.0, *, noDataScaling: bool = False):
         offsetSampleNum = int(offset / self.header.secsPerTick) if useSecForOffset else int(offset)
         lengthSampleNum = int(length / self.header.secsPerTick) if useSecForLength else int(length)
         if (self.header.DataFormat == constant.FORMAT_DOUBLE):
@@ -227,23 +228,45 @@ class BinFile:
             lengthSampleNum = 0
         self.f.seek(constant.CFWB_SIZE + constant.CHANNEL_SIZE * self.header.NChannels + offsetSampleNum * sampleSize * self.header.NChannels, 0)
         channelArr = []
-        for i in range(0, self.header.NChannels):
-            channelArr.append(array("d", (0,) * lengthSampleNum))
 
-        for x in range(0, lengthSampleNum):
-            i = 0
-            for c in channelArr:
+        if noDataScaling:
+            for i in range(0, self.header.NChannels):
                 if self.header.DataFormat == constant.FORMAT_DOUBLE:
-                    c[x] = struct.unpack("h", self.f.read(constant.SHORT_SIZE))[0]
+                    channelArr.append(array("d", (0,) * lengthSampleNum))
                 elif self.header.DataFormat == constant.FORMAT_FLOAT:
-                    c[x] = struct.unpack("f", self.f.read(constant.FLOAT_SIZE))[0]
+                    channelArr.append(array("f", (0,) * lengthSampleNum))
                 elif self.header.DataFormat == constant.FORMAT_SHORT:
-                    v = struct.unpack("h", self.f.read(constant.SHORT_SIZE))[0]
-                    if v in constant.GAP_SHORT_VALUES:
-                        c[x] = constant.MIN_DOUBLE_VALUE
-                    else:
-                        c[x] = self.channels[i].scale * (v + self.channels[i].offset)
-                i += 1
+                    channelArr.append(array("h", (0,) * lengthSampleNum))
+            for x in range(0, lengthSampleNum):
+                i = 0
+                for c in channelArr:
+                    if self.header.DataFormat == constant.FORMAT_DOUBLE:
+                        c[x] = struct.unpack("d", self.f.read(constant.DOUBLE_SIZE))[0]
+                    elif self.header.DataFormat == constant.FORMAT_FLOAT:
+                        c[x] = struct.unpack("f", self.f.read(constant.FLOAT_SIZE))[0]
+                    elif self.header.DataFormat == constant.FORMAT_SHORT:
+                        c[x] = struct.unpack("h", self.f.read(constant.SHORT_SIZE))[0]
+        else:
+            for i in range(0, self.header.NChannels):
+                channelArr.append(array("d", (0,) * lengthSampleNum))
+
+            for x in range(0, lengthSampleNum):
+                i = 0
+                for c in channelArr:
+                    if self.header.DataFormat == constant.FORMAT_DOUBLE:
+                        c[x] = struct.unpack("d", self.f.read(constant.DOUBLE_SIZE))[0]
+                    elif self.header.DataFormat == constant.FORMAT_FLOAT:
+                        c[x] = struct.unpack("f", self.f.read(constant.FLOAT_SIZE))[0]
+                    elif self.header.DataFormat == constant.FORMAT_SHORT:
+                        v = struct.unpack("h", self.f.read(constant.SHORT_SIZE))[0]
+                        if v in constant.GAP_SHORT_VALUES:
+                            c[x] = constant.MIN_DOUBLE_VALUE
+                        else:
+                            c[x] = self.channels[i].scale * (v + self.channels[i].offset)
+                    i += 1
+            if downSamplingRatio != 1.0:
+                channelArr = fixsamplingarr(channelArr, downSamplingRatio)
+        
         return channelArr
 
     def writeChannelData(self, chanData: List[List[Any]], fs: int = 0, gapInSecs: int = 0):
